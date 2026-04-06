@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="QrCodeSc/QrCodeSc.vcxproj" Id="3db430c6-d202-4795-b002-3534317121b0" />
+</Solution>
