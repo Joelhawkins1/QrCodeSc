@@ -1,13 +1,12 @@
-#include <opencv2/opencv.hpp>
-#include <opencv2/objdetect.hpp>
-#include <opencv2/imgcodecs.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/core/utils/logger.hpp>
+#include <opencv2/opencv.hpp> // OpenCv Used for capturing video detecting QR codes and decoding them
 #include <windows.h>
-#include <shellapi.h>
-#include <string>
+#include <shellapi.h> // uses the windows command shell to open a url in your browser
+#include <string> 
 #include <iostream>
+#include <QMainWindow>  // Main class for QTGraphics
+#include <QTimer>       // Timer class
+#include <QLabel>       // To show the video feed
+#include <QLineEdit>    // To show the decoded QR text
 
 using namespace cv;
 using namespace std;
@@ -20,7 +19,7 @@ int main()
 	QRCodeDetector decode; // Initalizing 
 
 	cap.open(0, cv::CAP_DSHOW); // Openining the systems defualt camera 
-	cap.set(cv::CAP_PROP_FRAME_WIDTH, 640);
+	cap.set(cv::CAP_PROP_FRAME_WIDTH, 640); // Setting video resolution
 	cap.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
 
 	if (!cap.isOpened()) // Checks to see if camera is opened if not gives a error message
