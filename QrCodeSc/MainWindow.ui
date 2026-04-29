@@ -29,7 +29,8 @@
    <iconset theme="QIcon::ThemeIcon::CameraVideo"/>
   </property>
   <property name="styleSheet">
-   <string notr="true">background-color: rgb(161, 161, 161);</string>
+   <string notr="true">background-color: rgb(24, 24, 24);
+</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -73,12 +74,12 @@
       <property name="styleSheet">
        <string notr="true">QFrame#videoContainer {
     border: 5px solid #3e3e3e;
-    border-radius: 50px;
+    border-radius: 20px;
     background-color: black;
 }
 
 QLabel#lbl_video {
-    border-radius: 50px; /* Matches the frame */
+    border-radius: 20px; /* Matches the frame */
 }</string>
       </property>
       <property name="frameShape">
@@ -153,7 +154,7 @@ QLabel#lbl_video {
       </property>
       <property name="styleSheet">
        <string notr="true">QPushButton {
-    background-color: #00ffff; /* A nice green */
+    background-color: rgb(172, 172, 172); /* defualt color  */
     color: white;
     border-radius: 10px;
     padding: 10px;
@@ -161,11 +162,11 @@ QLabel#lbl_video {
 }
 
 QPushButton:hover {
-    background-color: #27ae60; /* Slightly darker green when hovering */
+    background-color: rgb(150, 150, 150); /* Slightly darker when hovering */
 }
 
 QPushButton:pressed {
-    background-color: #1e8449; /* Darkest green when clicked */
+    background-color: rgb(130, 130, 130); /* Darkest when clicked */
 }</string>
       </property>
       <property name="text">

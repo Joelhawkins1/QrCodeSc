@@ -7,6 +7,7 @@
 #include <QMessageBox>
 #include <Qpainter.h>
 #include <Qbitmap.h>
+#include <QPainterPath.h>
 
 MainWindow::MainWindow(QWidget * parent) : QMainWindow(parent) // constructor
 { 
@@ -16,7 +17,7 @@ MainWindow::MainWindow(QWidget * parent) : QMainWindow(parent) // constructor
     this->showMaximized(); // Tells Qt to open in full screen
     this->setWindowTitle("");
 
-    connect(ui.btn_openUrl, &QPushButton::clicked, this, &MainWindow::on_btn_openUrl_clicked);
+    // connect(ui.btn_openUrl, &QPushButton::clicked, this, &MainWindow::on_btn_openUrl_clicked);
 
     // -*- Initializing the camera -*-
     cap.open(0, cv::CAP_DSHOW); // Defualt camera is held a the first index 0
@@ -28,6 +29,8 @@ MainWindow::MainWindow(QWidget * parent) : QMainWindow(parent) // constructor
     connect(timer, &QTimer::timeout, this, &MainWindow::updateFrame);
     timer->start(33); // roughly 30 FPS
 }
+
+
 void MainWindow::resizeEvent(QResizeEvent* event) {
      QMainWindow::resizeEvent(event);
 
@@ -38,10 +41,10 @@ void MainWindow::resizeEvent(QResizeEvent* event) {
          mask.fill(Qt::color0);
          QPainter painter(&mask);
          painter.setRenderHint(QPainter::Antialiasing);
-         painter.setBrush(Qt::black);
+         painter.setBrush(Qt::color1);
 
          // 50, 50 is quite a large radius; 20-30 is usually standard
-         painter.drawRoundedRect(ui.lbl_video->rect(), 50, 50);
+         painter.drawRoundedRect(ui.lbl_video->rect(), 20, 20);
          ui.lbl_video->setMask(mask);
      }
 }
@@ -67,34 +70,61 @@ void MainWindow::updateFrame()
         }
     }
 
-        // -*- Convert MAT (OpenCV) To QIMAGE (QT) -*-
-        cv::cvtColor(frame, frame, cv::COLOR_BGR2RGB);
-        QImage qimg((const uchar*)frame.data, frame.cols, frame.rows, frame.step, QImage::Format_RGB888);
+    // -*- Convert MAT (OpenCV) To QIMAGE (QT) -*-
+    cv::cvtColor(frame, frame, cv::COLOR_BGR2RGB);
+    QImage qimg((const uchar*)frame.data, frame.cols, frame.rows, frame.step, QImage::Format_RGB888);
 
-        // -*- Dsiplay in MainWindow.UI -*- 
-        ui.lbl_video->setPixmap(QPixmap::fromImage(qimg).scaled(ui.lbl_video->size(), Qt::KeepAspectRatio));
-        // Use hardcoded 640x480 to see if it appears
-        // ui.lbl_video->setPixmap(QPixmap::fromImage(qimg).scaled(640, 480, Qt::KeepAspectRatio));
+    // 1. Prepare the Canvas
+    QPixmap roundedPixmap(ui.lbl_video->size());
+    roundedPixmap.fill(Qt::transparent); // Makes the corners see-through
+
+    // 2. Setup the Painter
+    QPainter painter(&roundedPixmap);
+    painter.setRenderHint(QPainter::Antialiasing);
+    painter.setRenderHint(QPainter::SmoothPixmapTransform);
+
+    // 3.1 Scale the image first to find its final size
+    QPixmap scaledVideo = QPixmap::fromImage(qimg.copy()).scaled(ui.lbl_video->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+
+    // 3.2 Calculate offsets to center the video in the label
+    int x = (ui.lbl_video->width() - scaledVideo.width()) / 2;
+    int y = (ui.lbl_video->height() - scaledVideo.height()) / 2;
+
+    // 3.3 Create the rounded clipping path at the centered position
+    QPainterPath path;
+    path.addRoundedRect(QRectF(x, y, scaledVideo.width(), scaledVideo.height()), 30, 30);
+    painter.setClipPath(path);
+
+    // 3.4 Draw the video at the calculated center
+    painter.drawPixmap(x, y, scaledVideo);
+    painter.end();
+
+
+    // 5. Finally, show the rounded result
+    ui.lbl_video->setPixmap(roundedPixmap);
+
+
+
+   
+    // -*- Dsiplay in MainWindow.UI -*- 
+    //ui.lbl_video->setPixmap(QPixmap::fromImage(qimg).scaled(ui.lbl_video->size(), Qt::KeepAspectRatio));
+    // Use hardcoded 640x480 to see if it appears
+    // ui.lbl_video->setPixmap(QPixmap::fromImage(qimg).scaled(640, 480, Qt::KeepAspectRatio));
 
 }
 
 void MainWindow::on_btn_openUrl_clicked()
+
+
+// -*- Open Button Actions -*-
 {
-    if (!currentUrl.empty()) {
-        // This opens the URL in the default browser
-        ShellExecuteA(NULL, "open", currentUrl.c_str(), NULL, NULL, SW_SHOWNORMAL);
+    if (!currentUrl.empty()) // if a url is scanned
+    {
+        ShellExecuteA(NULL, "open", currentUrl.c_str(), NULL, NULL, SW_SHOWNORMAL); // This opens the URL in the default browser
     }
-    else {
-        // This will tell you if the button works but the URL is empty
-        QMessageBox::warning(this, "Error", "No URL detected yet!");
+
+    else // if no url is scanned
+    {
+        QMessageBox::warning(this, "Error", "No URL detected!");
     }
 }
-
-/*
-	Refrences.
-
-	Windows.h https://learn.microsoft.com/en-us/windows/win32/shell/launch
-	VideoCapture Documentation https://docs.opencv.org/4.x/d8/dfe/classcv_1_1VideoCapture.html#a57c0e81e83e60f36c83027dc2a188e80
-	QRCodeDetector Documnetation https://docs.opencv.org/4.x/de/dc3/classcv_1_1QRCodeDetector.html#a397753e5eda6c54f10671e9013682bd7
-
-*/
