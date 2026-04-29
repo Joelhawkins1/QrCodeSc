@@ -15,7 +15,6 @@ public:
 private slots: 
     void updateFrame(); 
     void on_btn_openUrl_clicked(); // slot used for the open button.
-    void resizeEvent(QResizeEvent* event) override;
 
 private: // -*- objects and variables used across program -*-
 

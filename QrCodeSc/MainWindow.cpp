@@ -1,23 +1,18 @@
 #include "MainWindow.h"
 #include <opencv2/opencv.hpp>
-#include <windows.h>
+#include <windows.h> // required for shellapi
+#include <shellapi.h> // uses windows power shell to open url
 #include <QImage>
 #include <QPixmap>
-#include <shellapi.h>
 #include <QMessageBox>
 #include <Qpainter.h>
-#include <Qbitmap.h>
-#include <QPainterPath.h>
+#include <QPainterPath>
 
 MainWindow::MainWindow(QWidget * parent) : QMainWindow(parent) // constructor
 { 
     ui.setupUi(this);
-    // ui.lbl_video->setMask(QRegion(0, 0, ui.lbl_video->width(), ui.lbl_video->height(), QRegion::Rectangle));
     ui.txt_qrData->hide();
     this->showMaximized(); // Tells Qt to open in full screen
-    this->setWindowTitle("");
-
-    // connect(ui.btn_openUrl, &QPushButton::clicked, this, &MainWindow::on_btn_openUrl_clicked);
 
     // -*- Initializing the camera -*-
     cap.open(0, cv::CAP_DSHOW); // Defualt camera is held a the first index 0
@@ -30,34 +25,15 @@ MainWindow::MainWindow(QWidget * parent) : QMainWindow(parent) // constructor
     timer->start(33); // roughly 30 FPS
 }
 
-
-void MainWindow::resizeEvent(QResizeEvent* event) {
-     QMainWindow::resizeEvent(event);
-
-    // Create a rounded rectangle mask // This gives the video output curved edges
-     if (ui.lbl_video->width() > 0 && ui.lbl_video->height() > 0) 
-     {
-         QBitmap mask(ui.lbl_video->size());
-         mask.fill(Qt::color0);
-         QPainter painter(&mask);
-         painter.setRenderHint(QPainter::Antialiasing);
-         painter.setBrush(Qt::color1);
-
-         // 50, 50 is quite a large radius; 20-30 is usually standard
-         painter.drawRoundedRect(ui.lbl_video->rect(), 20, 20);
-         ui.lbl_video->setMask(mask);
-     }
-}
-
 void MainWindow::updateFrame() 
 {
-    cv::Mat frame, points, straight_qrcode;
-    cap >> frame; 
+    cv::Mat frame; // creating the frame variable that is used to store the current video frame
+    cap >> frame; // using the cap object to store its output into frame
 
     if (!frame.empty()) 
     {
         // Checks to see if camera is working
-        std::string data = decoder.detectAndDecode(frame, points, straight_qrcode);
+        std::string data = decoder.detectAndDecode(frame);
 
         if (!data.empty()) 
         {
@@ -65,8 +41,6 @@ void MainWindow::updateFrame()
 
             ui.txt_qrData->setText(QString("<a href='%1' style='color: #0000FF; text-decoration: underline;'>%1</a>").arg(QString::fromStdString(data)));
             ui.txt_qrData->show(); // Show it when data is found
-
-            // ui.txt_qrData->hide(); // Hide it when no QR is visible
         }
     }
 
@@ -74,49 +48,37 @@ void MainWindow::updateFrame()
     cv::cvtColor(frame, frame, cv::COLOR_BGR2RGB);
     QImage qimg((const uchar*)frame.data, frame.cols, frame.rows, frame.step, QImage::Format_RGB888);
 
-    // 1. Prepare the Canvas
+    // Prepare the Canvas
     QPixmap roundedPixmap(ui.lbl_video->size());
     roundedPixmap.fill(Qt::transparent); // Makes the corners see-through
 
-    // 2. Setup the Painter
+    // Setup the Painter
     QPainter painter(&roundedPixmap);
     painter.setRenderHint(QPainter::Antialiasing);
     painter.setRenderHint(QPainter::SmoothPixmapTransform);
 
-    // 3.1 Scale the image first to find its final size
+    // Scale the image first to find its final size
     QPixmap scaledVideo = QPixmap::fromImage(qimg.copy()).scaled(ui.lbl_video->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
 
-    // 3.2 Calculate offsets to center the video in the label
+    // Calculate offsets to center the video in the label
     int x = (ui.lbl_video->width() - scaledVideo.width()) / 2;
     int y = (ui.lbl_video->height() - scaledVideo.height()) / 2;
 
-    // 3.3 Create the rounded clipping path at the centered position
+    // Create the rounded clipping path at the centered position
     QPainterPath path;
     path.addRoundedRect(QRectF(x, y, scaledVideo.width(), scaledVideo.height()), 30, 30);
     painter.setClipPath(path);
 
-    // 3.4 Draw the video at the calculated center
+    // Draw the video at the calculated center
     painter.drawPixmap(x, y, scaledVideo);
     painter.end();
 
 
-    // 5. Finally, show the rounded result
+    // Finally, show the rounded result
     ui.lbl_video->setPixmap(roundedPixmap);
-
-
-
-   
-    // -*- Dsiplay in MainWindow.UI -*- 
-    //ui.lbl_video->setPixmap(QPixmap::fromImage(qimg).scaled(ui.lbl_video->size(), Qt::KeepAspectRatio));
-    // Use hardcoded 640x480 to see if it appears
-    // ui.lbl_video->setPixmap(QPixmap::fromImage(qimg).scaled(640, 480, Qt::KeepAspectRatio));
-
 }
 
-void MainWindow::on_btn_openUrl_clicked()
-
-
-// -*- Open Button Actions -*-
+void MainWindow::on_btn_openUrl_clicked() // -*- Open Button Actions -*-
 {
     if (!currentUrl.empty()) // if a url is scanned
     {
