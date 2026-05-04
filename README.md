@@ -1,18 +1,14 @@
 # QrCodeSc
 
-Descrition
-
-This app will use your systems camera to scan and open qr codes.
-It uses OpenCV to access your systems default camera, detect, and decode QR codes.
-This app also featurs a UI designed using QTgraphics.
+QrCodeSc
+Description
+This app will use your system’s camera to scan and open QR codes. It uses OpenCV to access your system's default camera, detect, and decode QR codes. This app also
+features a UI designed using QT Graphics.
 
 Installation
-
-In order to run this app users will have to download and setup both OpenCv and QTgraphics on a Windows machine.
+To run this app, users will have to download and set up both OpenCV and QT Graphics on a Windows machine.
 
 Usage
-
-To use this app first make sure that you have a webcam or camera setup. Note the app will autimatically use the systems default camera.
-Now open the app and you will see a video feed from your camera and show your QR code to the camera.
-The camera wil auto detect the code and the Url will show up above the camera feed.
-Once a Url is detected you can press the open button and the app will open the url in your browser.
+To use this app, first make sure that you have a webcam or camera setup. Note the app will automatically use the system's default camera. Now open the app, and you
+will see a video feed from your camera and show your QR code to the camera. The camera will auto-detect the code, and the URL will show up above the camera feed.
+Once a URL is detected, you can press the open button, and the app will open the URL in your browser.
